@@ -3,3 +3,6 @@
 export const siteUrl = (
   process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 ).replace(/\/+$/, "");
+
+// Google Analytics 4 측정 ID
+export const gaId = process.env.NEXT_PUBLIC_GA_ID ?? "G-5HDE1084FF";

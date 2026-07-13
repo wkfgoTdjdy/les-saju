@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { siteUrl } from "@/lib/site";
+import Script from "next/script";
+import { siteUrl, gaId } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,6 +32,17 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full">
+        {/* Google Analytics 4 (gtag.js) */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga4" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${gaId}');`}
+        </Script>
         <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 sm:px-6">
           <header className="flex items-center justify-between border-b border-line py-6">
             <Link href="/" className="text-xl font-extrabold tracking-tight">
