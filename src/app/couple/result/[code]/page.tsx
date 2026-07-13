@@ -107,12 +107,12 @@ export default async function CoupleResultPage({
         <p className="text-sm leading-relaxed">{report.contact.comment}</p>
       </Card>
 
-      <Card label="동거(유홀) 지수">
+      <Card label="동거지수">
         <div className="flex items-baseline gap-2">
           <span className="text-4xl font-extrabold text-rose-deep">
             {report.cohabit.percent}%
           </span>
-          <span className="font-mono text-xs text-rose">🚚 U-HAUL INDEX</span>
+          <span className="font-mono text-xs text-rose">🚚 함께 살 확률</span>
         </div>
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-cream">
           <div
@@ -126,16 +126,45 @@ export default async function CoupleResultPage({
         </p>
       </Card>
 
+      <Card label="둘이 만나면 트이는 금전운">
+        <div className="flex items-baseline gap-2">
+          <span className="text-4xl font-extrabold text-rose-deep">
+            {report.wealth.percent}%
+          </span>
+          <span className="font-mono text-xs text-rose">💰 WEALTH</span>
+        </div>
+        <div className="mt-3 h-3 overflow-hidden rounded-full bg-cream">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-sunset to-rose-deep"
+            style={{ width: `${report.wealth.percent}%` }}
+          />
+        </div>
+        <p className="mt-3 text-sm leading-relaxed">{report.wealth.comment}</p>
+      </Card>
+
+      <Card label="둘이 만나면 트이는 성공운">
+        <div className="flex items-baseline gap-2">
+          <span className="text-4xl font-extrabold text-rose-deep">
+            {report.success.percent}%
+          </span>
+          <span className="font-mono text-xs text-rose">🏆 SUCCESS</span>
+        </div>
+        <div className="mt-3 h-3 overflow-hidden rounded-full bg-cream">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-sunset to-rose-deep"
+            style={{ width: `${report.success.percent}%` }}
+          />
+        </div>
+        <p className="mt-3 text-sm leading-relaxed">{report.success.comment}</p>
+      </Card>
+
+      <Card label="여행 케미">
+        <p className="text-sm leading-relaxed">{report.travel.comment}</p>
+      </Card>
+
       <Card label="고양이 입양 예상">
         <p className="text-3xl">{report.cat.count > 0 ? "🐈".repeat(report.cat.count) : "🐈‍⬛?"}</p>
         <p className="mt-2 text-sm leading-relaxed">{report.cat.comment}</p>
-      </Card>
-
-      <Card label="좁은 판 경고">
-        <p className="text-2xl font-extrabold text-rose-deep">
-          전 애인의 전 애인일 확률 {report.smallWorld.percent}%
-        </p>
-        <p className="mt-2 text-sm leading-relaxed">{report.smallWorld.comment}</p>
       </Card>
 
       {couple.report && (

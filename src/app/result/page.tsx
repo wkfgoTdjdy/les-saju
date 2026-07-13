@@ -47,7 +47,7 @@ function SpectrumGauge({ report }: { report: LesReport }) {
       <div className="mt-2 flex justify-between font-mono text-xs text-rose">
         <span>티부</span>
         <span>전천후</span>
-        <span>립스틱팸</span>
+        <span>온팸</span>
       </div>
       <p className="mt-4 leading-relaxed">{tagline}</p>
       <p className="mt-2 rounded-xl bg-cream p-3 text-sm leading-relaxed">
@@ -110,6 +110,14 @@ export default async function ResultPage({
         </p>
       </header>
 
+      <Card label="정체성 감정서">
+        <h2 className="text-xl font-extrabold leading-snug">{report.identity.headline}</h2>
+        <p className="mt-2 leading-relaxed">{report.identity.body}</p>
+        <p className="mt-3 text-xs text-rose">
+          * 재미로 보는 감정입니다 — 정체성은 만세력이 아니라 본인이 정합니다.
+        </p>
+      </Card>
+
       <Card label="남성운 정산">
         <h2 className="text-xl font-extrabold leading-snug">{report.male.headline}</h2>
         <p className="mt-2 leading-relaxed">{report.male.body}</p>
@@ -124,6 +132,49 @@ export default async function ResultPage({
         <p className="mt-2 leading-relaxed">{report.type.description}</p>
       </Card>
 
+      <Card label="오행 밸런스">
+        <div className="grid gap-2">
+          {(["목", "화", "토", "금", "수"] as const).map((el) => (
+            <div key={el} className="flex items-center gap-3">
+              <span className="w-6 font-mono text-sm font-bold">{el}</span>
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-cream">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-sunset to-rose-deep"
+                  style={{
+                    width: `${(report.balance.counts[el] / report.balance.total) * 100}%`,
+                  }}
+                />
+              </div>
+              <span className="w-5 text-right font-mono text-xs text-rose">
+                {report.balance.counts[el]}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-sm leading-relaxed">{report.balance.dominantComment}</p>
+        <p className="mt-2 rounded-xl bg-cream p-3 text-sm leading-relaxed">
+          {report.balance.lackingComment}
+        </p>
+      </Card>
+
+      <Card label="연애할 때 나는">
+        <ul className="grid gap-2 text-sm leading-relaxed">
+          <li className="rounded-xl bg-cream p-3">
+            <strong>💘 고백</strong> — {report.love.confess}
+          </li>
+          <li className="rounded-xl bg-cream p-3">
+            <strong>📱 연락</strong> — {report.love.contact}
+          </li>
+          <li className="rounded-xl bg-cream p-3">
+            <strong>🔥 질투</strong> — {report.love.jealousy}
+          </li>
+          <li className="rounded-xl bg-cream p-3">
+            <strong>🗓️ 데이트</strong> — {report.love.date}
+          </li>
+        </ul>
+        <p className="mt-3 text-sm leading-relaxed">{report.love.tempo}</p>
+      </Card>
+
       <Card label="신살 리포트">
         <ul className="grid gap-4">
           {report.shinsals.map((s) => (
@@ -135,6 +186,16 @@ export default async function ResultPage({
             </li>
           ))}
         </ul>
+      </Card>
+
+      <Card label={`${report.yearly.year}년 나의 연애운`}>
+        <h2 className="text-xl font-extrabold leading-snug">{report.yearly.headline}</h2>
+        <p className="mt-2 leading-relaxed">{report.yearly.body}</p>
+      </Card>
+
+      <Card label="나를 살리는 상대">
+        <h2 className="text-xl font-extrabold">{report.ideal.headline}</h2>
+        <p className="mt-2 leading-relaxed">{report.ideal.body}</p>
       </Card>
 
       <Card label="애인 찾을 스팟">
@@ -151,12 +212,12 @@ export default async function ResultPage({
         )}
       </Card>
 
-      <Card label="유홀 지수">
+      <Card label="동거지수">
         <div className="flex items-baseline gap-2">
           <span className="text-4xl font-extrabold text-rose-deep">
             {report.uhaul.percent}%
           </span>
-          <span className="font-mono text-xs text-rose">🚚 U-HAUL INDEX</span>
+          <span className="font-mono text-xs text-rose">🚚 동거 속도</span>
         </div>
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-cream">
           <div

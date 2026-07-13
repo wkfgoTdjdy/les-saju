@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCoupleByCode } from "@/lib/db";
 import JoinCoupleForm from "@/components/JoinCoupleForm";
+import WaitForCompletion from "@/components/WaitForCompletion";
 
 // 초대 코드가 노출되는 페이지 — 색인은 막는다.
 export const metadata: Metadata = {
@@ -59,6 +60,9 @@ export default async function JoinCouplePage({
       <section className="mx-auto w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-sm">
         <JoinCoupleForm code={code} />
       </section>
+
+      {/* 다른 기기에서 궁합이 완성되면 (예: 초대한 쪽이 열어둔 이 페이지) 자동으로 결과로 이동 */}
+      <WaitForCompletion code={code} />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PersonFields, { PersonInput, EMPTY_PERSON } from "@/components/PersonFields";
+import WaitForCompletion from "@/components/WaitForCompletion";
 
 function toPayload(p: PersonInput) {
   return {
@@ -25,6 +26,7 @@ export default function CoupleForm() {
   const [partner, setPartner] = useState<PersonInput>(EMPTY_PERSON);
   const [direct, setDirect] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export default function CoupleForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "초대를 만들지 못했어요.");
       setInviteUrl(`${window.location.origin}/couple/join/${data.code}`);
+      setInviteCode(data.code);
       setCopied(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "초대를 만들지 못했어요.");
@@ -101,6 +104,7 @@ export default function CoupleForm() {
           onChange={(e) => {
             setDirect(e.target.checked);
             setInviteUrl(null);
+            setInviteCode(null);
           }}
           className="h-4 w-4 accent-rose-deep"
         />
@@ -148,8 +152,14 @@ export default function CoupleForm() {
           </button>
           <p className="text-xs leading-relaxed text-rose">
             애인이 생일을 입력하는 순간 AI가 둘의 궁합을 풀어요. 초대는 딱 한 번만 쓸 수
-            있어요 — 완성된 결과는 이 링크의 결과 페이지에서 둘이 함께 볼 수 있습니다.
+            있어요.
           </p>
+          {inviteCode && (
+            <WaitForCompletion
+              code={inviteCode}
+              message="이 페이지를 열어두세요 — 애인이 입력을 마치면 자동으로 결과로 이동해요"
+            />
+          )}
         </div>
       )}
     </form>

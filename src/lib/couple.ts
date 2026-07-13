@@ -1,5 +1,5 @@
 // 커플 궁합 해석 — pairChemistry(오행 상생·상극) 위에 커플 전용 코너를 얹는다.
-// 싸움 패턴, 먼저 연락하는 쪽, 동거 지수, 고양이 입양, 좁은 판 경고. 전부 결정적 계산.
+// 싸움 패턴, 먼저 연락하는 쪽, 동거지수, 금전운·성공운, 여행 케미, 고양이 입양. 전부 결정적 계산.
 import { SajuResult, Element, pairChemistry, PairChemistry } from "./saju";
 import { tenGodCounts, uhaulIndex, shinsals, spectrum, Spectrum } from "./les";
 
@@ -72,7 +72,7 @@ function firstContact(a: Person, b: Person): FirstContact {
   };
 }
 
-// ---------- 동거 지수 (유홀 합산) ----------
+// ---------- 동거지수 (개인 지수 합산) ----------
 
 export interface CohabitIndex {
   percent: number;
@@ -124,32 +124,70 @@ function catIndex(a: Person, b: Person): CatIndex {
   return { count, comment };
 }
 
-// ---------- 좁은 판 경고 ----------
+// ---------- 함께 있으면 트이는 운 (금전운·성공운) ----------
 
-export interface SmallWorld {
-  percent: number; // 전 애인의 전 애인일 확률 (재미용)
+export interface CoupleLuck {
+  percent: number;
+  headline: string;
   comment: string;
 }
 
-function smallWorld(a: Person, b: Person): SmallWorld {
-  // 판은 원래 좁다(기본 35%). 도화살은 인맥 반경을 넓히고(+15),
-  // 역마살은 원정을 다녀서 겹칠 판을 더 키운다(+10).
-  let percent = 35;
-  for (const p of [a, b]) {
-    const names = shinsals(p.saju).map((s) => s.name);
-    if (names.includes("도화살")) percent += 15;
-    if (names.includes("역마살")) percent += 10;
-  }
-  percent = Math.min(95, percent);
+/** 커플 금전운 — 두 사람의 재성(쟁취·재물)과 토(저축·안정) 기운 합산 */
+function wealthLuck(a: Person, b: Person): CoupleLuck {
+  const jae = tenGodCounts(a.saju).재성 + tenGodCounts(b.saju).재성;
+  const to = a.saju.elementCounts.토 + b.saju.elementCounts.토;
+  const percent = Math.max(20, Math.min(98, 40 + jae * 8 + to * 4));
+
+  // 플렉스 담당: 재성이 많은 쪽 / 통장 지킴이: 토+인성이 많은 쪽
+  const flexer =
+    tenGodCounts(a.saju).재성 >= tenGodCounts(b.saju).재성 ? a.name : b.name;
+  const saverScore = (p: Person) => p.saju.elementCounts.토 + tenGodCounts(p.saju).인성;
+  const saver = saverScore(a) >= saverScore(b) ? a.name : b.name;
 
   const comment =
-    percent >= 70
-      ? "인스타 팔로워를 지금 교차 검증하세요. 공통 팔로워 중에 두 사람 모두의 과거가 있습니다."
+    percent >= 75
+      ? `둘이 만나면 돈이 붙는 조합입니다. 플렉스 담당은 ${flexer}, 통장 지킴이는 ${saver} — 역할 분담이 사주에 이미 새겨져 있어요. 공동 적금 하나 트면 무섭게 모입니다.`
       : percent >= 50
-        ? "아직 발견 안 됐을 뿐입니다. 언젠가 술자리에서 '어? 너 걔 알아?'가 나옵니다."
-      : "비교적 안전한 확률이지만, 어차피 판은 좁습니다. 퀴퍼에서 전 애인 마주칠 준비는 늘 되어 있어야 함.";
+        ? `쓸 때 쓰고 모을 때 모으는 균형형 커플. ${flexer}가 지르려고 하면 ${saver}가 장바구니에서 하루 재워두자고 합니다 — 그 하루가 이 커플의 재테크 비결.`
+        : `돈보다 낭만이 먼저인 커플 — 통장은 얇아도 추억은 부자입니다. 대신 데이트 통장 하나만 만들어두세요. 낭만에도 예산이 있으면 더 오래갑니다.`;
 
-  return { percent, comment };
+  return { percent, headline: "둘이 만나면 트이는 금전운", comment };
+}
+
+/** 커플 성공운 — 관성(커리어·카리스마)과 식상(창작·표현) 기운 합산 */
+function successLuck(a: Person, b: Person): CoupleLuck {
+  const gwan = tenGodCounts(a.saju).관성 + tenGodCounts(b.saju).관성;
+  const sik = tenGodCounts(a.saju).식상 + tenGodCounts(b.saju).식상;
+  const percent = Math.max(25, Math.min(98, 35 + gwan * 9 + sik * 6));
+
+  const comment =
+    gwan > sik
+      ? `관성(커리어 기운) 합이 강한 파워커플 — 승진과 합격 소식이 번갈아 들려옵니다. 서로의 일을 존중하는 게 이 커플의 사랑 언어. 바쁜 시즌엔 '각자 열심히, 주말에 몰아서'가 공식입니다.`
+      : sik > gwan
+        ? `식상(창작·표현 기운) 합이 강한 크리에이티브 커플 — 같이 뭔가 만들면 터집니다. 사이드 프로젝트, 유튜브, 스마트스토어… 둘이 시작한 일이 본업을 넘볼 수 있어요.`
+        : `커리어와 창작이 균형 잡힌 조합 — 한쪽이 벌이를 지키고 한쪽이 판을 벌입니다. 서로의 도전을 밀어주면 5년 뒤 완전히 다른 체급이 되어 있을 커플.`;
+
+  return { percent, headline: "둘이 만나면 트이는 성공운", comment };
+}
+
+// ---------- 여행 케미 (역마살 조합) ----------
+
+export interface TravelChemistry {
+  comment: string;
+}
+
+function travelChemistry(a: Person, b: Person): TravelChemistry {
+  const hasYeokma = (p: Person) => shinsals(p.saju).some((s) => s.name === "역마살");
+  const count = (hasYeokma(a) ? 1 : 0) + (hasYeokma(b) ? 1 : 0);
+
+  const comment =
+    count === 2
+      ? "둘 다 역마살 보유 — 여권에 도장 찍으러 다니는 커플입니다. 기념일마다 도시가 하나씩 늘어나요. 다음 퀴퍼는 해외로 가세요, 사주가 허락했습니다."
+      : count === 1
+        ? `${hasYeokma(a) ? a.name : b.name}의 역마살이 여행을 끌고, 다른 한 명이 숙소 컨디션을 책임지는 조합 — 계획과 안락함이 다 잡힙니다. 싸우는 건 딱 하나, 아침 일찍 나가느냐 마느냐.`
+        : "둘 다 집이 최고인 커플 — 여행은 짧고 굵게, 호캉스가 정답입니다. 체크인하자마자 가운 입고 룸서비스 시키는 그 순간이 이 커플의 진짜 휴가.";
+
+  return { comment };
 }
 
 // ---------- 종합 ----------
@@ -162,7 +200,9 @@ export interface CoupleReport {
   contact: FirstContact;
   cohabit: CohabitIndex;
   cat: CatIndex;
-  smallWorld: SmallWorld;
+  wealth: CoupleLuck;
+  success: CoupleLuck;
+  travel: TravelChemistry;
 }
 
 export function buildCoupleReport(a: Person, b: Person): CoupleReport {
@@ -175,6 +215,8 @@ export function buildCoupleReport(a: Person, b: Person): CoupleReport {
     contact: firstContact(a, b),
     cohabit: cohabitIndex(a, b),
     cat: catIndex(a, b),
-    smallWorld: smallWorld(a, b),
+    wealth: wealthLuck(a, b),
+    success: successLuck(a, b),
+    travel: travelChemistry(a, b),
   };
 }

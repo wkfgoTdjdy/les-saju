@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "LES SAJU",
     title: "LES SAJU — 레즈비언 전용 사주",
     description:
-      "사주에 새겨진 나의 레즈 기질. 팸-부치 스펙트럼부터 유홀 지수까지, 생년월일 하나로.",
+      "사주에 새겨진 나의 레즈 기질. 팸-부치 스펙트럼부터 동거지수까지, 생년월일 하나로.",
   },
   robots: { index: true, follow: true },
 };

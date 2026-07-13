@@ -3,7 +3,7 @@
 // 주고 연애 맥락의 해석만 맡긴다. GEMINI_API_KEY가 없으면 미리보기 리포트를 반환한다.
 import { GoogleGenAI } from "@google/genai";
 import { calculateSaju, formatPillars, CalendarType, CALENDAR_LABEL, SajuResult } from "./saju";
-import { tenGodCounts, spectrum, maleAudit, shinsals, lesType } from "./les";
+import { tenGodCounts, spectrum, maleAudit, identityAudit, shinsals, lesType } from "./les";
 import { buildCoupleReport, Person, CoupleReport } from "./couple";
 import type { CouplePerson } from "./db";
 
@@ -26,7 +26,7 @@ function personBrief(p: Person, raw: CouplePerson): string {
     `  사주: ${formatPillars(s)} / ${s.animal}띠 / 일간: ${s.dayMaster.stem}(${s.dayMaster.yinYang}${s.dayMaster.element})`,
     `  오행: ${counts} / 십신: 비겁${tg.비겁} 식상${tg.식상} 재성${tg.재성} 관성${tg.관성} 인성${tg.인성}`,
     `  유형: ${lesType(s).name} / 팸-부치 스펙트럼: ${sp.zone}(${sp.score}) / 신살: ${shinsals(s).map((x) => x.name).join(", ")}`,
-    `  남성운 정산: ${maleAudit(s).headline}`,
+    `  남성운 정산: ${maleAudit(s).headline} / 정체성 감정(재미용): ${identityAudit(s).verdict}`,
   ].join("\n");
 }
 
@@ -59,9 +59,11 @@ ${personBrief(b, bRaw)}
 - 근거: ${report.chemistry.reasons.join("; ") || "특이 관계 없음"}
 - 싸움 패턴: ${a.name} → ${report.fight.a} / ${b.name} → ${report.fight.b} / 조합 특성: ${report.fight.note}
 - 먼저 연락하는 쪽: ${report.contact.winner ?? "동시"} — ${report.contact.comment}
-- 동거(유홀) 지수: ${report.cohabit.percent}% (먼저 부동산 앱을 켜는 쪽: ${report.cohabit.mover})
+- 동거지수: ${report.cohabit.percent}% (먼저 부동산 앱을 켜는 쪽: ${report.cohabit.mover})
+- 금전운: ${report.wealth.percent}% — ${report.wealth.comment}
+- 성공운: ${report.success.percent}% — ${report.success.comment}
+- 여행 케미: ${report.travel.comment}
 - 고양이 입양 예상: ${report.cat.count}마리 — ${report.cat.comment}
-- 전 애인의 전 애인일 확률: ${report.smallWorld.percent}%
 
 ## 요청
 다음 구성으로 마크다운 리포트를 한국어로 작성하세요. 재미있고 생동감 있게, 그러나 실제 사주 데이터(일간, 오행, 십신, 신살)를 구체적으로 인용하며 근거를 대세요.
@@ -70,7 +72,8 @@ ${personBrief(b, bRaw)}
 ## 총평 — 두 사람의 케미를 한 문단으로 (계산된 점수와 관계 유형 인용)
 ## 서로에게 끌린 이유 — 각자의 사주 기질이 상대의 어떤 부분을 채우는지
 ## 싸울 때 매뉴얼 — 싸움 패턴 분석과 구체적인 화해 프로토콜 (유쾌하게)
-## 함께하는 미래 — 동거 지수·고양이 입양 예상을 엮은 생활 시뮬레이션
+## 둘이 만나면 트이는 운 — 금전운·성공운 계산값을 근거로 커플의 재물·커리어 시너지 해석
+## 함께하는 미래 — 동거지수·여행 케미·고양이 입양 예상을 엮은 생활 시뮬레이션
 ## 이 커플에게 한마디 — 따뜻하고 웃긴 응원으로 마무리`;
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -132,8 +135,10 @@ ${soloLine(b.name, b.saju)}
 
 - **싸울 때**: ${a.name}은 ${report.fight.a}, ${b.name}은 ${report.fight.b}. ${report.fight.note}
 - **먼저 연락하는 쪽**: ${report.contact.comment}
-- **동거(유홀) 지수 ${report.cohabit.percent}%**: ${report.cohabit.comment}
+- **동거지수 ${report.cohabit.percent}%**: ${report.cohabit.comment}
+- **금전운 ${report.wealth.percent}%**: ${report.wealth.comment}
+- **성공운 ${report.success.percent}%**: ${report.success.comment}
+- **여행 케미**: ${report.travel.comment}
 - **고양이 ${report.cat.count}마리 예정**: ${report.cat.comment}
-- **전 애인의 전 애인일 확률 ${report.smallWorld.percent}%**: ${report.smallWorld.comment}
 `;
 }
