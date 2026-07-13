@@ -12,6 +12,20 @@ export const metadata: Metadata = {
   },
   description:
     "사주에 새겨진 나의 레즈 기질. 생년월일만 입력하면 팸-부치 스펙트럼, 남성운 정산, 애인 찾을 스팟 추천까지. 로그인 없음, 저장 없음.",
+  keywords: [
+    "레즈비언 사주",
+    "레즈 사주",
+    "레즈비언 커플 궁합",
+    "여자 커플 궁합",
+    "동성 커플 궁합",
+    "팸 부치 테스트",
+    "퀴어 사주",
+    "레즈비언 테스트",
+    "사주 궁합",
+    "무료 사주",
+    "커플 궁합 테스트",
+    "동거지수",
+  ],
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -21,7 +35,20 @@ export const metadata: Metadata = {
     description:
       "사주에 새겨진 나의 레즈 기질. 팸-부치 스펙트럼부터 동거지수까지, 생년월일 하나로.",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "LES SAJU — 레즈비언 전용 사주",
+    description:
+      "사주에 새겨진 나의 레즈 기질. 팸-부치 스펙트럼부터 커플 궁합까지, 생년월일 하나로.",
+  },
   robots: { index: true, follow: true },
+  verification: {
+    // 서치콘솔(URL 접두어 속성) HTML 태그 검증값 — 배포 환경변수로 주입
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    other: process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION
+      ? { "naver-site-verification": process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION }
+      : undefined,
+  },
 };
 
 export default function RootLayout({
