@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CoupleForm from "@/components/CoupleForm";
+import { usingMemoryStore } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "커플 궁합",
@@ -24,6 +25,12 @@ export default function CouplePage() {
           예상까지 풀어드립니다. 커플 사주는 <strong>딱 1회</strong> — 신중하게, 진심으로.
         </p>
       </section>
+
+      {usingMemoryStore && (
+        <p className="mx-auto max-w-md rounded-xl border border-sunset bg-card p-3 text-center text-xs font-semibold text-sunset-deep">
+          ⚠️ 개발 모드: Supabase가 설정되지 않아 초대가 서버 재시작 시 사라져요.
+        </p>
+      )}
 
       <section className="mx-auto w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-sm">
         <CoupleForm />
