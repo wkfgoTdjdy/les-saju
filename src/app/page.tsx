@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 
 export const metadata: Metadata = {
@@ -65,6 +66,21 @@ export default function Home() {
             <p className="mt-1 text-sm leading-relaxed text-ink/80">{f.body}</p>
           </div>
         ))}
+      </section>
+
+      <section className="rounded-2xl border border-line bg-card p-6 text-center">
+        <p className="text-3xl">💌</p>
+        <h2 className="mt-2 text-xl font-extrabold">애인이랑 커플 궁합 보기</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-rose">
+          초대 링크를 보내면 애인이 생일을 입력하는 순간 AI가 둘의 궁합을 풀어드려요.
+          싸움 매뉴얼부터 고양이 입양 예상까지 — 커플 사주는 딱 1회, 신중하게.
+        </p>
+        <Link
+          href="/couple"
+          className="mt-4 inline-block rounded-xl bg-gradient-to-r from-sunset via-rose-soft to-rose-deep px-6 py-3 font-extrabold text-white transition hover:opacity-90"
+        >
+          커플 궁합 시작하기 →
+        </Link>
       </section>
     </div>
   );

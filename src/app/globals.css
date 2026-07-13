@@ -27,3 +27,45 @@ body {
   background: var(--color-cream);
   color: var(--color-ink);
 }
+
+/* AI 리포트 마크다운 (components/Markdown.tsx) */
+.report-md {
+  line-height: 1.7;
+  font-size: 0.925rem;
+}
+.report-md h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+.report-md h2 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--color-rose-deep);
+}
+.report-md h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 1rem 0 0.35rem;
+}
+.report-md p {
+  margin: 0.5rem 0;
+}
+.report-md ul,
+.report-md ol {
+  margin: 0.5rem 0 0.5rem 1.25rem;
+  list-style: disc;
+}
+.report-md li {
+  margin: 0.25rem 0;
+}
+.report-md blockquote {
+  border-left: 3px solid var(--color-rose-soft);
+  padding-left: 0.75rem;
+  color: var(--color-rose);
+  margin: 0.75rem 0;
+}
+.report-md strong {
+  color: var(--color-rose-deep);
+}

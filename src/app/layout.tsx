@@ -44,8 +44,7 @@ export default function RootLayout({
           <footer className="grid gap-1 border-t border-line py-6 text-center text-xs text-rose">
             <p>재미로 보는 사주입니다 — 당신의 정체성은 만세력보다 당신이 더 잘 압니다 🏳️‍🌈</p>
             <p>
-              🔒 로그인 필요 없음 · 생년월일과 닉네임 외에는 어떤 정보도 받지 않고, 서버에
-              저장하지도 않아요
+              🔒 로그인 필요 없음 · 생년월일과 닉네임 외에는 어떤 정보도 저장하지 않아요
             </p>
           </footer>
         </div>

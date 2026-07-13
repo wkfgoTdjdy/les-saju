@@ -169,6 +169,12 @@ export default async function ResultPage({
 
       <div className="mt-2 grid gap-3 text-center">
         <CopyLinkButton />
+        <Link
+          href="/couple"
+          className="mx-auto rounded-xl border-2 border-rose-deep px-5 py-3 font-bold text-rose-deep transition hover:bg-rose-deep hover:text-white"
+        >
+          💌 애인이랑 커플 궁합 보기
+        </Link>
         <Link href="/" className="text-sm font-semibold text-rose underline">
           다른 생일로 다시 보기
         </Link>
