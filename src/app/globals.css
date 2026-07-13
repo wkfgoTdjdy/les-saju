@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* LES SAJU 디자인 토큰
+   - 레즈비언 플래그 선셋 팔레트: 오렌지(#D52D00→#FF9A56) / 화이트 / 핑크(#D162A4→#A30262)
+   - 따뜻한 크림 배경, 진한 로즈 텍스트, 둥근 카드 (futsal-saju의 브루탈리즘과 대비되는 소프트 톤) */
+
+@theme inline {
+  --font-sans: -apple-system, "Apple SD Gothic Neo", "Pretendard Variable",
+    "Noto Sans KR", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Space Mono", monospace;
+
+  --color-sunset-deep: #d52d00;
+  --color-sunset: #ef7627;
+  --color-sunset-soft: #ff9a56;
+  --color-rose-soft: #d162a4;
+  --color-rose: #b55690;
+  --color-rose-deep: #a30262;
+
+  --color-cream: #fff8f3;
+  --color-ink: #47102f;
+  --color-card: #ffffff;
+  --color-line: #f3dcd0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
