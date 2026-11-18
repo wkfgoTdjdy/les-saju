@@ -147,7 +147,23 @@ export interface LesType {
   description: string;
 }
 
-const DAY_MASTER_TYPE: Record<string, LesType> = {
+// 일간 10종 — 유형 소개 페이지(/types/[slug])의 URL·표기용
+export const DAY_MASTERS = [
+  { slug: "gap", stem: "갑", hanja: "甲", element: "목", yinYang: "양" },
+  { slug: "eul", stem: "을", hanja: "乙", element: "목", yinYang: "음" },
+  { slug: "byeong", stem: "병", hanja: "丙", element: "화", yinYang: "양" },
+  { slug: "jeong", stem: "정", hanja: "丁", element: "화", yinYang: "음" },
+  { slug: "mu", stem: "무", hanja: "戊", element: "토", yinYang: "양" },
+  { slug: "gi", stem: "기", hanja: "己", element: "토", yinYang: "음" },
+  { slug: "gyeong", stem: "경", hanja: "庚", element: "금", yinYang: "양" },
+  { slug: "sin", stem: "신", hanja: "辛", element: "금", yinYang: "음" },
+  { slug: "im", stem: "임", hanja: "壬", element: "수", yinYang: "양" },
+  { slug: "gye", stem: "계", hanja: "癸", element: "수", yinYang: "음" },
+] as const satisfies readonly {
+  slug: string; stem: string; hanja: string; element: Element; yinYang: "양" | "음";
+}[];
+
+export const DAY_MASTER_TYPE: Record<string, LesType> = {
   갑: {
     name: "키 큰 나무형",
     description: "듬직하고 올곧아서 다들 한 번씩 기대보고 싶어함. 정작 본인은 기대는 법을 모름 — 그게 매력이자 숙제.",
@@ -308,7 +324,7 @@ export interface HuntingSpot {
   bonus: string | null; // 신살 보너스 코멘트
 }
 
-const ELEMENT_SPOTS: Record<Element, { headline: string; spots: string[] }> = {
+export const ELEMENT_SPOTS: Record<Element, { headline: string; spots: string[] }> = {
   목: {
     headline: "몸 쓰는 데서 눈 맞는 사주",
     spots: [
@@ -496,13 +512,17 @@ const LOVE_STYLE: Record<Element, Omit<LoveStyle, "tempo">> = {
   },
 };
 
-export function loveStyle(saju: SajuResult): LoveStyle {
-  const base = LOVE_STYLE[saju.dayMaster.element];
+export function loveStyleFor(element: Element, yinYang: "양" | "음"): LoveStyle {
+  const base = LOVE_STYLE[element];
   const tempo =
-    saju.dayMaster.yinYang === "양"
+    yinYang === "양"
       ? "양간이라 표현이 먼저 나가는 편 — 생각보다 말이 빠릅니다. 실수해도 그게 매력."
       : "음간이라 속으로 백 번 시뮬레이션한 뒤 실행하는 편 — 느려 보여도 이미 다 계획되어 있음.";
   return { ...base, tempo };
+}
+
+export function loveStyle(saju: SajuResult): LoveStyle {
+  return loveStyleFor(saju.dayMaster.element, saju.dayMaster.yinYang);
 }
 
 // ---------- 올해의 연애운 (연간 천간 vs 일간) ----------

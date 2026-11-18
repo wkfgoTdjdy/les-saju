@@ -3,7 +3,7 @@ import CoupleForm from "@/components/CoupleForm";
 import { usingMemoryStore } from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: "커플 궁합",
+  title: "레즈비언 커플 궁합 — 여자 커플 사주 궁합",
   description:
     "두 사람의 사주로 보는 레즈비언 커플 궁합. 초대 링크를 보내면 애인이 생일을 입력하는 순간 AI가 궁합을 풀어드립니다.",
   alternates: { canonical: "/couple" },

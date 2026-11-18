@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 import { siteUrl } from "@/lib/site";
+import { DAY_MASTERS, DAY_MASTER_TYPE } from "@/lib/les";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -105,6 +106,25 @@ export default function Home() {
         >
           커플 궁합 시작하기 →
         </Link>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-xl font-extrabold">일간별 레즈 유형 10가지</h2>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          {DAY_MASTERS.map((d) => (
+            <Link
+              key={d.slug}
+              href={`/types/${d.slug}`}
+              className="rounded-xl border border-line bg-card px-4 py-3 transition hover:border-rose-soft"
+            >
+              <span className="font-mono text-xs text-rose">
+                {d.stem}{d.element}({d.hanja})
+              </span>
+              <br />
+              <span className="font-bold">{DAY_MASTER_TYPE[d.stem].name}</span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section>
