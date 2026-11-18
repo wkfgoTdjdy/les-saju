@@ -87,28 +87,50 @@ ${personBrief(b, bRaw)}
   return text;
 }
 
-// 구버전 모델이 신규 계정에 막히는 경우(404)가 있어 후보를 순서대로 시도한다.
-// GEMINI_MODEL이 설정되어 있으면 그것을 최우선으로.
+// 모델 후보. GEMINI_MODEL이 설정되어 있으면 그것을 최우선으로.
+// 별칭(gemini-flash-latest)은 과부하 때 응답 없이 멈추거나 503을 내는 일이 있어 뒤에 둔다.
 const MODEL_CANDIDATES = [
   ...(process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : []),
-  "gemini-flash-latest",
   "gemini-3-flash-preview",
-  "gemini-2.5-flash",
+  "gemini-flash-latest",
 ];
 
+// 리포트 생성은 정상일 때 10~30초. 그보다 오래 걸리면 다음 후보를 함께 출발시키고(헤지),
+// 어떤 시도도 ATTEMPT_TIMEOUT_MS를 넘겨 매달려 있지 않게 한다.
+const HEDGE_MS = 30_000;
+const ATTEMPT_TIMEOUT_MS = 90_000;
+
 async function generateWithFallback(ai: GoogleGenAI, prompt: string): Promise<string> {
-  let lastError: unknown;
+  const attempts: Promise<string>[] = [];
   for (const model of MODEL_CANDIDATES) {
-    try {
-      const response = await ai.models.generateContent({ model, contents: prompt });
-      if (response.text) return response.text;
-    } catch (e) {
-      lastError = e; // 404(모델 미지원) 등 — 다음 후보로
-    }
+    attempts.push(
+      ai.models
+        .generateContent({
+          model,
+          contents: prompt,
+          config: { httpOptions: { timeout: ATTEMPT_TIMEOUT_MS } },
+        })
+        .then((r) => {
+          if (!r.text) throw new Error(`${model}: 빈 응답`);
+          return r.text;
+        })
+        .catch((e) => {
+          console.error(`[llm] ${model} 실패:`, e instanceof Error ? e.message : e);
+          throw e;
+        })
+    );
+    // 지금까지 출발한 시도 중 하나라도 성공하면 끝. 전부 실패했으면 즉시,
+    // 아직 응답이 없으면 HEDGE_MS 뒤에 다음 후보로 넘어간다.
+    const text = await Promise.race([
+      Promise.any(attempts).catch(() => null),
+      new Promise<null>((resolve) => setTimeout(resolve, HEDGE_MS, null)),
+    ]);
+    if (text) return text;
   }
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("사용 가능한 Gemini 모델을 찾지 못했습니다. GEMINI_MODEL을 설정해보세요.");
+  // 후보를 다 출발시켰다 — 남은 시도가 끝나길 기다린다
+  const text = await Promise.any(attempts).catch(() => null);
+  if (text) return text;
+  throw new Error("지금 AI가 붐벼서 궁합을 읽지 못했어요. 잠시 후 다시 시도해주세요.");
 }
 
 function soloLine(name: string, s: SajuResult): string {
