@@ -17,6 +17,7 @@ export const CALENDAR_LABEL: Record<CalendarType, string> = {
 export interface Pillar {
   stem: string; // 천간 (한글)
   branch: string; // 지지 (한글)
+  hanja: string; // 간지 한자 2글자 (명식표 표기용)
   stemElement: Element;
   branchElement: Element;
 }
@@ -77,6 +78,7 @@ function toPillar(ganzhi: string): Pillar {
   return {
     stem: STEM_KO[stem],
     branch: BRANCH_KO[branch],
+    hanja: ganzhi,
     stemElement: STEM_ELEMENT[stem],
     branchElement: BRANCH_ELEMENT[branch],
   };
@@ -145,7 +147,7 @@ export function calculateSaju(
 }
 
 // 천간합: 갑기합(토), 을경합(금), 병신합(수), 정임합(목), 무계합(화)
-const STEM_HAP: [string, string][] = [
+export const STEM_HAP: [string, string][] = [
   ["갑", "기"], ["을", "경"], ["병", "신"], ["정", "임"], ["무", "계"],
 ];
 // 지지충: 자오, 축미, 인신, 묘유, 진술, 사해

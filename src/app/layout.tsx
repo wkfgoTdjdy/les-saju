@@ -1,8 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
+import { Noto_Serif_KR } from "next/font/google";
 import { siteUrl, gaId } from "@/lib/site";
 import "./globals.css";
+
+// 제목 전용 명조 — 만세력 책의 조판 느낌. 본문·버튼은 시스템 고딕 그대로.
+const serif = Noto_Serif_KR({
+  weight: ["500", "600"],
+  subsets: ["latin"],
+  variable: "--font-serif-kr",
+  display: "swap",
+});
+
+/** 로고 마크 — 레즈비언 플래그 5색 띠 (평면) */
+function FlagMark() {
+  return (
+    <span aria-hidden className="grid h-4 w-5 grid-rows-5 overflow-hidden rounded-xs border border-line">
+      <span className="bg-flag-1" />
+      <span className="bg-flag-2" />
+      <span className="bg-flag-3" />
+      <span className="bg-flag-4" />
+      <span className="bg-flag-5" />
+    </span>
+  );
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -57,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full antialiased">
+    <html lang="ko" className={`h-full antialiased ${serif.variable}`}>
       <body className="min-h-full">
         {/* Google Analytics 4 (gtag.js) */}
         <Script
@@ -70,21 +92,25 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', '${gaId}');`}
         </Script>
-        <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 sm:px-6">
-          <header className="flex items-center justify-between border-b border-line py-6">
-            <Link href="/" className="text-xl font-extrabold tracking-tight">
-              🌈 LES SAJU
+        <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-5 sm:px-8">
+          <header className="flex h-16 items-center justify-between border-b border-line">
+            <Link href="/" className="flex items-center gap-2 text-[17px] font-semibold">
+              <FlagMark />
+              LES SAJU
             </Link>
-            <span className="hidden font-mono text-xs uppercase tracking-widest text-rose sm:inline">
-              Lesbian × Saju
-            </span>
+            <nav className="flex items-center gap-5 text-sm text-sub">
+              <Link href="/" className="transition-colors duration-150 hover:text-ink">
+                내 사주
+              </Link>
+              <Link href="/couple" className="transition-colors duration-150 hover:text-ink">
+                커플 궁합
+              </Link>
+            </nav>
           </header>
-          <main className="flex-1 pb-16 pt-8">{children}</main>
-          <footer className="grid gap-1 border-t border-line py-6 text-center text-xs text-rose">
+          <main className="page-main flex-1 pb-20 pt-10 sm:pt-16">{children}</main>
+          <footer className="grid gap-1 border-t border-line py-6 text-xs leading-5 text-muted">
             <p>재미로 보는 사주입니다 — 당신의 정체성은 만세력보다 당신이 더 잘 압니다 🏳️‍🌈</p>
-            <p>
-              🔒 로그인 필요 없음 · 생년월일과 닉네임 외에는 어떤 정보도 저장하지 않아요
-            </p>
+            <p>로그인 필요 없음 · 생년월일과 닉네임 외에는 어떤 정보도 저장하지 않아요</p>
           </footer>
         </div>
       </body>

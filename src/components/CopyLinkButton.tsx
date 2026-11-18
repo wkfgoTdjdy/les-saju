@@ -17,11 +17,8 @@ export default function CopyLinkButton() {
   }
 
   return (
-    <button
-      onClick={copy}
-      className="rounded-xl border-2 border-rose-deep px-5 py-3 font-bold text-rose-deep transition hover:bg-rose-deep hover:text-white"
-    >
-      {copied ? "복사됐어요! 🎉" : "결과 링크 복사하기"}
+    <button onClick={copy} className="btn-secondary">
+      {copied ? "복사됐어요" : "결과 링크 복사하기"}
     </button>
   );
 }

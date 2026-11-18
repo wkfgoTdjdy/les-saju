@@ -6,3 +6,8 @@ export const siteUrl = (
 
 // Google Analytics 4 측정 ID
 export const gaId = process.env.NEXT_PUBLIC_GA_ID ?? "G-5HDE1084FF";
+
+// 복비(후원) 링크 — 결과 페이지 하단 복비함의 목적지.
+// NEXT_PUBLIC_TIP_URL로 바꿀 수 있고, 빈 값("")으로 설정하면 복비함을 숨긴다.
+export const tipUrl =
+  (process.env.NEXT_PUBLIC_TIP_URL ?? "https://buymeacoffee.com/sia_dev") || null;

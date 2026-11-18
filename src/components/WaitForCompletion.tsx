@@ -40,8 +40,9 @@ export default function WaitForCompletion({
 
   if (!message) return null;
   return (
-    <p className="text-center text-xs font-semibold text-rose">
-      <span className="mr-1 inline-block animate-pulse">✨</span>
+    <p className="label flex items-center gap-2">
+      {/* 실제로 3초마다 확인 중이라는 표시 — 살아 있는 상태에만 쓰는 점 */}
+      <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-accent" />
       {message}
     </p>
   );

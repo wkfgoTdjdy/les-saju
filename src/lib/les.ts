@@ -7,7 +7,23 @@ import {
   GENERATES,
   CONTROLS,
   ELEMENTS,
+  STEM_HAP,
 } from "./saju";
+
+export const EL_HANJA: Record<Element, string> = {
+  목: "木", 화: "火", 토: "土", 금: "金", 수: "水",
+};
+
+// 받침 유무에 맞는 조사 — pair는 [받침 있을 때, 없을 때]
+const josa = (word: string, pair: [string, string]) =>
+  (word.charCodeAt(word.length - 1) - 0xac00) % 28 ? pair[0] : pair[1];
+
+const clampPct = (n: number) => Math.max(5, Math.min(98, Math.round(n)));
+
+function branchPillars(saju: SajuResult): Pillar[] {
+  const { year, month, day, time } = saju.pillars;
+  return [year, month, day, time].filter((p): p is Pillar => p !== null);
+}
 
 // ---------- 십신(十神) — 일간 기준 오행 관계 5분류 ----------
 // 음양까지 나눈 10분류 대신 오행 단위 5분류를 쓴다 (해석 단순화).
@@ -18,17 +34,18 @@ export type TenGod = "비겁" | "식상" | "재성" | "관성" | "인성";
 
 export type TenGodCounts = Record<TenGod, number>;
 
+/** 일간 오행(dm) 기준으로 다른 오행(el)이 어떤 십신인지 */
+export function tenGodOf(dm: Element, el: Element): TenGod {
+  if (el === dm) return "비겁";
+  if (GENERATES[dm] === el) return "식상";
+  if (CONTROLS[dm] === el) return "재성";
+  if (CONTROLS[el] === dm) return "관성";
+  return "인성";
+}
+
 export function tenGodCounts(saju: SajuResult): TenGodCounts {
   const dm = saju.dayMaster.element;
   const counts: TenGodCounts = { 비겁: 0, 식상: 0, 재성: 0, 관성: 0, 인성: 0 };
-
-  const classify = (el: Element): TenGod => {
-    if (el === dm) return "비겁";
-    if (GENERATES[dm] === el) return "식상";
-    if (CONTROLS[dm] === el) return "재성";
-    if (CONTROLS[el] === dm) return "관성";
-    return "인성";
-  };
 
   const { year, month, day, time } = saju.pillars;
   const chars: Element[] = [];
@@ -39,7 +56,7 @@ export function tenGodCounts(saju: SajuResult): TenGodCounts {
   // 일간 자신은 제외 — 연·월 4자 다음이 일간이므로 항상 인덱스 4
   chars.splice(4, 1);
 
-  for (const el of chars) counts[classify(el)]++;
+  for (const el of chars) counts[tenGodOf(dm, el)]++;
   return counts;
 }
 
@@ -52,6 +69,7 @@ export interface Spectrum {
   zone: "티부" | "소프트부치" | "전천후" | "소프트팸" | "온팸";
   tagline: string;
   twist: string; // 반전 한 스푼
+  why: string; // 계산 근거
 }
 
 const ZONE_TAGLINE: Record<Spectrum["zone"], string> = {
@@ -104,7 +122,14 @@ export function spectrum(saju: SajuResult): Spectrum {
             : "근데 팔씨름은 의외로 잘함."
         : "오늘은 부치, 내일은 팸. 정하는 건 언제나 본인임.";
 
-  return { score, zone, tagline: ZONE_TAGLINE[zone], twist };
+  const yang = saju.dayMaster.yinYang === "양";
+  const why =
+    `십신 분포는 비겁 ${tg.비겁} · 식상 ${tg.식상} · 재성 ${tg.재성} · 관성 ${tg.관성} · 인성 ${tg.인성}. ` +
+    "비겁·재성(주체성·쟁취)은 부치 쪽으로, 식상·인성(표현·수용)은 팸 쪽으로 좌표를 당깁니다. " +
+    `일간이 ${yang ? "양" : "음"}간이라 ${yang ? "부치" : "팸"} 쪽으로 한 칸 더 — ` +
+    `합산 ${score}점 (-100 티부 ~ +100 온팸).`;
+
+  return { score, zone, tagline: ZONE_TAGLINE[zone], twist, why };
 }
 
 // ---------- 남성운 정산 (관성 재해석) ----------
@@ -115,12 +140,19 @@ export interface MaleAudit {
   count: number;
   headline: string;
   body: string;
+  why: string;
 }
 
 export function maleAudit(saju: SajuResult): MaleAudit {
   const count = tenGodCounts(saju).관성;
+  const dm = saju.dayMaster.element;
+  const gwan = ELEMENTS.find((el) => CONTROLS[el] === dm)!;
+  const why =
+    `관성은 나(일간 ${dm})를 극하는 오행, 즉 ${gwan}(${EL_HANJA[gwan]})입니다. ` +
+    `일간을 뺀 나머지 글자 중 ${gwan} 기운이 ${count}개.`;
   if (count === 0) {
     return {
+      why,
       count,
       headline: "🎉 축하합니다, 사주에 남성운이 없으시네요",
       body: "관성(전통 사주에서 '남성운'이라 우기는 그것)이 완전 공석입니다. 만세력이 이미 다 알고 있었다는 뜻. 운명 감정 결과: 정상 영업 중.",
@@ -128,12 +160,14 @@ export function maleAudit(saju: SajuResult): MaleAudit {
   }
   if (count === 1) {
     return {
+      why,
       count,
       headline: "관성 1개 발견 — 무시하셔도 됩니다",
       body: "전통 사주라면 '남성운'이라고 호들갑 떨었겠지만, 레즈 사주에서 관성 1개는 '마감 기한' 정도로 읽습니다. 일은 제때 하는 사주네요.",
     };
   }
   return {
+    why,
     count,
     headline: `관성 ${count}개 — 남성 아니고 커리어입니다`,
     body: "레즈 사주에서 관성은 남성이 아니라 카리스마와 커리어로 읽습니다. 조직을 휘어잡는 기운이 강한 사주 — 승진운이라고 부르는 게 정확합니다.",
@@ -216,6 +250,7 @@ export interface Shinsal {
   name: string;
   emoji: string;
   description: string;
+  why: string;
 }
 
 // 홍염살: 일간 → 지지 (통용 표 기준)
@@ -225,16 +260,22 @@ const HONGYEOM: Record<string, string> = {
 };
 
 export function shinsals(saju: SajuResult): Shinsal[] {
-  const { year, month, day, time } = saju.pillars;
-  const pillars = [year, month, day, time].filter((p): p is Pillar => p !== null);
+  const pillars = branchPillars(saju);
   const branches = pillars.map((p) => p.branch);
   const found: Shinsal[] = [];
+  // 근거 문장: 해당 지지를 한자와 함께 보여준다
+  const hits = (set: string[]) =>
+    pillars
+      .filter((p) => set.includes(p.branch))
+      .map((p) => `${p.branch}(${p.hanja[1]})`)
+      .join("·");
 
   if (branches.some((b) => ["자", "오", "묘", "유"].includes(b))) {
     found.push({
       name: "도화살",
       emoji: "🌸",
       description: "여자한테 인기 많은 살. 퀴어 모임 가면 꼭 누가 인스타 아이디 물어봄. 본인은 '나 인기 없는데?'라고 함 — 그게 도화살의 완성입니다.",
+      why: `지지에 ${hits(["자", "오", "묘", "유"])} — 자·오·묘·유 중 하나가 있으면 도화살`,
     });
   }
   if (branches.some((b) => ["인", "신", "사", "해"].includes(b))) {
@@ -242,6 +283,7 @@ export function shinsals(saju: SajuResult): Shinsal[] {
       name: "역마살",
       emoji: "✈️",
       description: "퀴퍼 원정살. 서울퀴퍼로는 부족해서 대구·부산·제주퀴퍼까지 감. 여행 가서 현지 레즈바 찾는 검색 실력이 프로급.",
+      why: `지지에 ${hits(["인", "신", "사", "해"])} — 인·신·사·해 중 하나가 있으면 역마살`,
     });
   }
   if (branches.some((b) => ["진", "술", "축", "미"].includes(b))) {
@@ -249,6 +291,7 @@ export function shinsals(saju: SajuResult): Shinsal[] {
       name: "화개살",
       emoji: "🎨",
       description: "집순이 예술가 살. 데이트 코스가 전시회→독립책방→조용한 카페로 고정됨. 플레이리스트 공유가 곧 애정표현.",
+      why: `지지에 ${hits(["진", "술", "축", "미"])} — 진·술·축·미 중 하나가 있으면 화개살`,
     });
   }
   if (branches.includes(HONGYEOM[saju.dayMaster.stem])) {
@@ -256,6 +299,7 @@ export function shinsals(saju: SajuResult): Shinsal[] {
       name: "홍염살",
       emoji: "🍷",
       description: "은은하게 사람 홀리는 살. 도화살이 직사광선이라면 홍염살은 무드등. 본인만 자기 매력을 모르고, 주변은 이미 다 알고 있음.",
+      why: `${saju.dayMaster.stem} 일간에게는 지지 ${HONGYEOM[saju.dayMaster.stem]}가 홍염 — 사주에 그 글자가 있음`,
     });
   }
 
@@ -264,6 +308,7 @@ export function shinsals(saju: SajuResult): Shinsal[] {
       name: "무살(無殺) 클린 사주",
       emoji: "🧼",
       description: "신살이 하나도 없는 담백한 사주. 화려한 밀당 대신 진국의 정공법으로 승부하는 타입 — 오래 만날수록 진가가 나옴.",
+      why: "도화·역마·화개·홍염에 해당하는 지지가 하나도 없음",
     });
   }
   return found;
@@ -278,6 +323,7 @@ export interface IdentityAudit {
   verdict: string;
   headline: string;
   body: string;
+  why: string;
 }
 
 export function identityAudit(saju: SajuResult): IdentityAudit {
@@ -285,9 +331,13 @@ export function identityAudit(saju: SajuResult): IdentityAudit {
   const sals = shinsals(saju).map((s) => s.name);
   const charm = (sals.includes("도화살") ? 1 : 0) + (sals.includes("홍염살") ? 1 : 0);
   const score = gwan * 2 + charm;
+  const why =
+    `관성 ${gwan}개 × 2점 + 도화·홍염 ${charm}점 = ${score}점. ` +
+    "0점은 공인 레즈, 1~2점은 레즈, 3~4점은 바이 기운, 5점부터는 이성애자 사주(를 이긴 사람)로 감정합니다.";
 
   if (score <= 0) {
     return {
+      why,
       verdict: "만세력 공인 레즈",
       headline: "🏳️‍🌈 감정 결과: 만세력 공인 레즈",
       body: "남성 기운과의 인연이 사주에 아예 없습니다. 서류상으로도, 실물로도 레즈. 만세력이 직인까지 찍어드렸어요.",
@@ -295,6 +345,7 @@ export function identityAudit(saju: SajuResult): IdentityAudit {
   }
   if (score <= 2) {
     return {
+      why,
       verdict: "레즈 (진단서 발급 완료)",
       headline: "✅ 감정 결과: 레즈, 이상 무",
       body: "미세한 남성운 흔적이 있으나 오차 범위 이내입니다. 판정: 레즈. 진단서는 이 페이지를 캡처하시면 됩니다.",
@@ -302,12 +353,14 @@ export function identityAudit(saju: SajuResult): IdentityAudit {
   }
   if (score <= 4) {
     return {
+      why,
       verdict: "바이 기운 감지",
       headline: "💜 감정 결과: 바이 기운 감지",
       body: "사주상 사람을 가리지 않고 끌어당기는 기운이 있어요. 바이일 가능성도 사주는 열어둡니다 — 어느 쪽이든 정하는 건 만세력이 아니라 본인입니다. 지금 여기 들어와 있는 게 가장 정확한 데이터고요.",
     };
   }
   return {
+    why,
     verdict: "이성애자 사주?!",
     headline: "😱 감정 결과: 이성애자 사주…인데요?",
     body: "전통 사주 기준으로 남성운이 이렇게 강한데도 지금 이 사이트에 접속해 있는 당신 — 사주를 이겨버린 사람입니다. 운명보다 강한 게 취향이에요. 재검 불필요, 축하드립니다.",
@@ -322,6 +375,7 @@ export interface HuntingSpot {
   headline: string;
   spots: string[];
   bonus: string | null; // 신살 보너스 코멘트
+  why: string;
 }
 
 export const ELEMENT_SPOTS: Record<Element, { headline: string; spots: string[] }> = {
@@ -379,7 +433,10 @@ export function huntingSpot(saju: SajuResult): HuntingSpot {
         ? "홍염살 보유자 — 조명 어두운 곳일수록 매력이 증폭됩니다. 무드등 있는 곳으로."
         : null;
 
-  return { headline: base.headline, spots: base.spots, bonus };
+  const el = saju.dominantElement;
+  const why = `여덟 글자 중 ${el}(${EL_HANJA[el]}) 기운이 ${saju.elementCounts[el]}개로 가장 많아서, ${el} 기운이 빛나는 장소를 골랐습니다.`;
+
+  return { headline: base.headline, spots: base.spots, bonus, why };
 }
 
 // ---------- 동거지수 (U-Haul 밈) ----------
@@ -389,6 +446,11 @@ export function huntingSpot(saju: SajuResult): HuntingSpot {
 export interface UhaulIndex {
   percent: number; // 0~100
   comment: string;
+  why: string;
+}
+
+function hasYeokma(saju: SajuResult): boolean {
+  return branchPillars(saju).some((p) => ["인", "신", "사", "해"].includes(p.branch));
 }
 
 export function uhaulIndex(saju: SajuResult): UhaulIndex {
@@ -399,17 +461,15 @@ export function uhaulIndex(saju: SajuResult): UhaulIndex {
     tg.인성 * 10 +
     tg.비겁 * -5;
 
-  const branches = [
-    saju.pillars.year,
-    saju.pillars.month,
-    saju.pillars.day,
-    saju.pillars.time,
-  ]
-    .filter((p): p is Pillar => p !== null)
-    .map((p) => p.branch);
-  if (branches.some((b) => ["인", "신", "사", "해"].includes(b))) percent -= 15;
+  const yeokma = hasYeokma(saju);
+  if (yeokma) percent -= 15;
 
-  percent = Math.max(5, Math.min(98, Math.round(percent)));
+  const raw = percent;
+  percent = clampPct(percent);
+  const why =
+    `기본 30 + 토 ${saju.elementCounts.토}개×8 + 인성 ${tg.인성}개×10 − 비겁 ${tg.비겁}개×5` +
+    `${yeokma ? " − 역마살 15" : ""} = ${raw}${raw !== percent ? ` → ${percent}%로 보정` : "%"}. ` +
+    "토와 인성은 정착하려는 기운, 비겁은 내 공간을 지키려는 기운입니다.";
 
   const comment =
     percent >= 75
@@ -420,7 +480,7 @@ export function uhaulIndex(saju: SajuResult): UhaulIndex {
           ? "각자의 집이 있어야 사랑도 오래 가는 타입. 애인의 동거 돌진 기질을 만나면 협상 필수."
           : "독립성이 생명인 사주. 동거 얘기가 나오면 일단 여행부터 같이 가보자고 하세요.";
 
-  return { percent, comment };
+  return { percent, comment, why };
 }
 
 // ---------- 오행 밸런스 ----------
@@ -532,7 +592,16 @@ export interface YearlyLove {
   god: TenGod;
   headline: string;
   body: string;
+  why: string;
 }
+
+const GOD_MEANING: Record<TenGod, string> = {
+  비겁: "나와 같은 기운",
+  식상: "내가 낳는 기운",
+  재성: "내가 다스리는 기운",
+  관성: "나를 다스리는 기운",
+  인성: "나를 낳아주는 기운",
+};
 
 const YEAR_STEM_ELEMENT: Element[] = ["목", "목", "화", "화", "토", "토", "금", "금", "수", "수"];
 
@@ -562,13 +631,10 @@ const YEARLY_COMMENT: Record<TenGod, { headline: string; body: string }> = {
 export function yearlyLove(saju: SajuResult, year: number): YearlyLove {
   const yearElement = YEAR_STEM_ELEMENT[(year - 4) % 10];
   const dm = saju.dayMaster.element;
-  const god: TenGod =
-    yearElement === dm ? "비겁" :
-    GENERATES[dm] === yearElement ? "식상" :
-    CONTROLS[dm] === yearElement ? "재성" :
-    CONTROLS[yearElement] === dm ? "관성" : "인성";
+  const god = tenGodOf(dm, yearElement);
+  const why = `${year}년의 천간은 ${yearElement}(${EL_HANJA[yearElement]}) 기운. ${dm} 일간인 당신에게 ${yearElement}${josa(yearElement, ["은", "는"])} ${god} — ${GOD_MEANING[god]}입니다.`;
 
-  return { year, god, ...YEARLY_COMMENT[god] };
+  return { year, god, ...YEARLY_COMMENT[god], why };
 }
 
 // ---------- 이상형: 나를 살리는 상대 ----------
@@ -578,6 +644,9 @@ export interface IdealType {
   headline: string;
   body: string;
   types: string[]; // 어울리는 일간 유형 이름들
+  why: string;
+  // 천간합 상대 — 일간끼리 합이 드는 단 하나의 일간
+  hap: { slug: string; label: string; name: string };
 }
 
 const STEMS_BY_ELEMENT: Record<Element, string[]> = {
@@ -590,16 +659,78 @@ export function idealType(saju: SajuResult): IdealType {
   const supporter = ELEMENTS.find((el) => GENERATES[el] === dm)!;
   const types = STEMS_BY_ELEMENT[supporter].map((s) => DAY_MASTER_TYPE[s].name);
 
+  const myStem = saju.dayMaster.stem;
+  const pair = STEM_HAP.find((h) => h.includes(myStem))!;
+  const hap = DAY_MASTERS.find((d) => d.stem === (pair[0] === myStem ? pair[1] : pair[0]))!;
+
   const lackingNote = saju.lackingElements.length
     ? ` 그리고 당신에게 없는 ${saju.lackingElements.join("·")} 기운을 가진 사람도 운명 후보 — 처음엔 '나랑 너무 다른데?' 싶다가 어느 순간 없으면 안 되는 사람이 됩니다.`
     : " 오행이 고루 있는 사주라 웬만한 상대와 다 합이 맞는 편 — 결국 취향 싸움입니다.";
 
   return {
     element: supporter,
-    headline: `당신을 살리는 오행은 ${supporter}(${supporter === "목" ? "木" : supporter === "화" ? "火" : supporter === "토" ? "土" : supporter === "금" ? "金" : "水"})`,
+    headline: `당신을 살리는 오행은 ${supporter}(${EL_HANJA[supporter]})`,
     body: `${supporter} 기운의 상대와 있으면 이유 없이 충전되고, 지쳤을 때 제일 먼저 생각납니다. 유형으로 치면 '${types.join("' 또는 '")}' 같은 사람.${lackingNote}`,
     types,
+    why: `${supporter}生${dm} — ${supporter}(${EL_HANJA[supporter]})${josa(supporter, ["이", "가"])} ${dm}(${EL_HANJA[dm]})${josa(dm, ["을", "를"])} 낳아주는 상생 관계라서, ${supporter} 기운 곁에서 일간이 힘을 얻습니다.`,
+    hap: { slug: hap.slug, label: `${hap.stem}${hap.element}`, name: DAY_MASTER_TYPE[hap.stem].name },
   };
+}
+
+// ---------- 밈 지수 3종 (재미용) ----------
+// 커뮤니티 단골 밈을 수치화한다. 높든 낮든 축하로 끝나는 게 원칙.
+
+export interface MemeIndex {
+  name: string;
+  percent: number;
+  comment: string;
+  why: string;
+}
+
+export function memeIndexes(saju: SajuResult): MemeIndex[] {
+  const tg = tenGodCounts(saju);
+  const el = saju.elementCounts;
+  const yeokma = hasYeokma(saju);
+
+  const ex = clampPct(30 + tg.비겁 * 12 + el.수 * 6 - el.금 * 8);
+  const radar = clampPct(40 + el.수 * 8 + tg.식상 * 8 - el.토 * 8);
+  const distance = clampPct(35 + (yeokma ? 20 : 0) + tg.비겁 * 8 + el.금 * 5 - el.화 * 8);
+
+  return [
+    {
+      name: "전애인과 친구로 남을 확률",
+      percent: ex,
+      comment:
+        ex >= 65
+          ? "전애인의 현애인과도 친구인 사주. 생일 파티 단체사진이 사실상 연애사 연표입니다 — 그게 이 커뮤니티의 저력이죠."
+          : ex >= 40
+            ? "친구로 남긴 하는데 1년의 숙성 기간이 필요한 타입. 그 뒤엔 누구보다 든든한 사이가 됩니다."
+            : "끝나면 깔끔하게 끝. 미련 없는 정리 실력 덕분에 다음 연애가 늘 새것처럼 시작됩니다.",
+      why: `기본 30 + 비겁 ${tg.비겁}개×12(동지애) + 수 ${el.수}개×6(흘려보내는 힘) − 금 ${el.금}개×8(칼같은 정리)`,
+    },
+    {
+      name: "플러팅 눈치",
+      percent: radar,
+      comment:
+        radar >= 65
+          ? "상대가 마음먹기도 전에 이미 알고 있음. 모르는 척해주는 것까지가 이 사주의 매너입니다."
+          : radar >= 40
+            ? "세 번쯤 신호를 받으면 알아챕니다. 주변에서 '쟤 너 좋아해'라고 말해주면 확정."
+            : "3년 뒤에 '그때 그게 플러팅이었어?' 하는 타입. 대신 이 무해함에 다들 더 빠져듭니다.",
+      why: `기본 40 + 수 ${el.수}개×8(촉) + 식상 ${tg.식상}개×8(끼) − 토 ${el.토}개×8(우직함)`,
+    },
+    {
+      name: "장거리 연애 내성",
+      percent: distance,
+      comment:
+        distance >= 65
+          ? "KTX 정기권이 곧 러브레터. 떨어져 있는 시간에 각자 더 멋있어져서 만나는 사주입니다."
+          : distance >= 40
+            ? "격주 만남까지는 거뜬. 영상통화 켜놓고 각자 할 일 하는 게 최고의 데이트."
+            : "보고 싶으면 지금 봐야 하는 사주. 그 직진 덕분에 장거리가 금방 근거리가 됩니다.",
+      why: `기본 35${yeokma ? " + 역마살 20" : ""} + 비겁 ${tg.비겁}개×8(독립성) + 금 ${el.금}개×5(결단) − 화 ${el.화}개×8(지금 당장 보고 싶음)`,
+    },
+  ];
 }
 
 // ---------- 결과 종합 ----------
@@ -617,6 +748,7 @@ export interface LesReport {
   ideal: IdealType;
   hunting: HuntingSpot;
   uhaul: UhaulIndex;
+  memes: MemeIndex[];
 }
 
 export function buildReport(
@@ -636,5 +768,6 @@ export function buildReport(
     ideal: idealType(saju),
     hunting: huntingSpot(saju),
     uhaul: uhaulIndex(saju),
+    memes: memeIndexes(saju),
   };
 }

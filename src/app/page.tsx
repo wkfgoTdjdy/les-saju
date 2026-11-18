@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 import { siteUrl } from "@/lib/site";
-import { DAY_MASTERS, DAY_MASTER_TYPE } from "@/lib/les";
+import { DAY_MASTERS, DAY_MASTER_TYPE, lesType } from "@/lib/les";
+import { calculateSaju } from "@/lib/saju";
+import SajuChart from "@/components/SajuChart";
+import Seal from "@/components/Seal";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -33,109 +36,123 @@ const FAQ = [
 
 const FEATURES = [
   {
-    emoji: "🎉",
     title: "남성운 정산",
     body: "전통 사주가 '남성운'이라 우기던 관성, 여기서는 커리어와 카리스마로 다시 읽습니다. 공석이면 축하 드리고요.",
   },
   {
-    emoji: "🏳️‍🌈",
     title: "팸-부치 스펙트럼",
     body: "십신 분포로 계산한 나의 좌표. 티부부터 온팸까지 — 물론 반전 디테일도 함께.",
   },
   {
-    emoji: "📍",
     title: "애인 찾을 스팟",
     body: "오행이 알려주는 나의 사냥터. 클라이밍장이 국룰인 사주가 따로 있습니다.",
   },
   {
-    emoji: "🚚",
     title: "동거지수",
     body: "만난 지 한 달 만에 이사 트럭 부르는 그 기질, 사주에 다 나와 있어요.",
   },
 ];
 
+// 히어로에 보여주는 예시 명식 — 실제 계산 결과 (특정인의 생일이 아닌 임의의 날짜)
+const SAMPLE = { date: "1995-06-15", time: "09:30" };
+
 export default function Home() {
+  const sample = calculateSaju(SAMPLE.date, SAMPLE.time, "solar");
+  const sampleType = lesType(sample);
+
   return (
-    <div className="grid gap-12">
-      <section className="grid gap-4 text-center">
-        <p className="font-mono text-xs uppercase tracking-[3px] text-rose">
-          for lesbians, by 만세력
-        </p>
-        <h1 className="text-4xl font-extrabold leading-tight sm:text-5xl">
-          사주에 새겨진
-          <br />
-          <span className="bg-gradient-to-r from-sunset-deep via-rose-soft to-rose-deep bg-clip-text text-transparent">
+    <div className="wide grid gap-20">
+      <section className="grid gap-x-16 gap-y-10 lg:grid-cols-[1fr_26rem] lg:items-center">
+        <div className="grid gap-4">
+          <p className="label">레즈비언 전용 사주</p>
+          <h1 className="title text-[40px] leading-[1.15] sm:text-[56px] sm:leading-[1.1]">
+            사주에 새겨진
+            <br />
             나의 레즈 기질
-          </span>
-        </h1>
-        <p className="mx-auto max-w-md text-rose">
-          생년월일 하나면 끝. 만세력(절기 기준)으로 사주 4주를 계산해서
-          당신만 몰랐던 당신 얘기를 해드립니다.
-        </p>
-        <div className="mx-auto flex flex-wrap justify-center gap-2 text-xs font-semibold">
-          <span className="rounded-full border border-line bg-card px-3 py-1.5">🔒 로그인 필요 없음</span>
-          <span className="rounded-full border border-line bg-card px-3 py-1.5">생년월일·닉네임 외 수집 없음</span>
-          <span className="rounded-full border border-line bg-card px-3 py-1.5">서버 저장 없음 · 아웃팅 걱정 없음</span>
+          </h1>
+          <p className="max-w-md text-lg leading-7 text-sub">
+            생년월일 하나면 끝. 만세력(절기 기준)으로 사주 4주를 계산해서 당신만 몰랐던
+            당신 얘기를 해드립니다
+          </p>
+        </div>
+
+        <div className="card lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <BirthForm />
+        </div>
+
+        <div className="grid gap-4 lg:col-start-1">
+          <SajuChart
+            saju={sample}
+            caption={`예시 명식 · 양력 ${SAMPLE.date} ${SAMPLE.time}`}
+          />
+          <div className="flex items-center gap-3">
+            <Seal hanja={sample.pillars.day.hanja[0]} />
+            <p className="text-sm leading-5">
+              <span className="text-muted">
+                {sample.dayMaster.stem}
+                {sample.dayMaster.element} 일간
+              </span>
+              <br />
+              <span className="font-medium">{sampleType.name}</span>
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-sm">
-        <BirthForm />
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2">
+      <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
         {FEATURES.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-line bg-card p-5">
-            <p className="text-2xl">{f.emoji}</p>
-            <h2 className="mt-2 font-bold">{f.title}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-ink/80">{f.body}</p>
+          <div key={f.title} className="border-t border-line pt-4">
+            <h2 className="font-medium">{f.title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-sub">{f.body}</p>
           </div>
         ))}
       </section>
 
-      <section className="rounded-2xl border border-line bg-card p-6 text-center">
-        <p className="text-3xl">💌</p>
-        <h2 className="mt-2 text-xl font-extrabold">애인이랑 커플 궁합 보기</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-rose">
-          초대 링크를 보내면 애인이 생일을 입력하는 순간 AI가 둘의 궁합을 풀어드려요.
-          싸움 매뉴얼부터 고양이 입양 예상까지 — 커플 사주는 딱 1회, 신중하게.
-        </p>
-        <Link
-          href="/couple"
-          className="mt-4 inline-block rounded-xl bg-gradient-to-r from-sunset via-rose-soft to-rose-deep px-6 py-3 font-extrabold text-white transition hover:opacity-90"
-        >
-          커플 궁합 시작하기 →
+      <section className="card grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div>
+          <h2 className="title text-2xl">애인이랑 커플 궁합 보기</h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-sub">
+            초대 링크를 보내면 애인이 생일을 입력하는 순간 AI가 둘의 궁합을 풀어드려요.
+            싸움 매뉴얼부터 고양이 입양 예상까지 — 커플 사주는 딱 1회, 신중하게.
+          </p>
+        </div>
+        <Link href="/couple" className="btn-secondary">
+          커플 궁합 시작하기
         </Link>
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-extrabold">일간별 레즈 유형 10가지</h2>
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <h2 className="title mb-4 text-2xl">일간별 레즈 유형 10가지</h2>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {DAY_MASTERS.map((d) => (
             <Link
               key={d.slug}
               href={`/types/${d.slug}`}
-              className="rounded-xl border border-line bg-card px-4 py-3 transition hover:border-rose-soft"
+              className="flex items-center gap-3 rounded-lg border border-line bg-card p-3 transition-colors duration-150 hover:bg-raised"
             >
-              <span className="font-mono text-xs text-rose">
-                {d.stem}{d.element}({d.hanja})
+              <span className="font-serif text-2xl leading-none font-medium">{d.hanja}</span>
+              <span className="text-sm leading-5">
+                <span className="text-muted">
+                  {d.stem}
+                  {d.element}
+                </span>
+                <br />
+                {DAY_MASTER_TYPE[d.stem].name}
               </span>
-              <br />
-              <span className="font-bold">{DAY_MASTER_TYPE[d.stem].name}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-4 text-xl font-extrabold">자주 묻는 질문</h2>
-        <div className="grid gap-3">
+      <section className="max-w-2xl">
+        <h2 className="title mb-4 text-2xl">자주 묻는 질문</h2>
+        <div className="border-b border-line">
           {FAQ.map((item) => (
-            <details key={item.q} className="rounded-2xl border border-line bg-card">
-              <summary className="cursor-pointer p-4 font-bold marker:text-rose-deep">
+            <details key={item.q} className="border-t border-line">
+              <summary className="cursor-pointer py-4 font-medium marker:text-muted">
                 {item.q}
               </summary>
-              <p className="border-t border-line p-4 text-sm leading-relaxed">{item.a}</p>
+              <p className="pb-4 text-sm leading-relaxed text-sub">{item.a}</p>
             </details>
           ))}
         </div>

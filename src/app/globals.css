@@ -1,25 +1,39 @@
 @import "tailwindcss";
 
 /* LES SAJU 디자인 토큰
-   - 레즈비언 플래그 선셋 팔레트: 오렌지(#D52D00→#FF9A56) / 화이트 / 핑크(#D162A4→#A30262)
-   - 따뜻한 크림 배경, 진한 로즈 텍스트, 둥근 카드 (futsal-saju의 브루탈리즘과 대비되는 소프트 톤) */
+   - 세계: 만세력 책과 사주 명식표 — 한지(따뜻한 종이 중성색), 먹(본문), 인주(낙관).
+   - 강조색은 레즈비언 플래그의 진한 핑크 하나. 플래그 5색 그라디언트는
+     팸-부치 스펙트럼 게이지와 로고 마크에만 쓴다 (의미가 있는 곳). */
 
 @theme inline {
   --font-sans: -apple-system, "Apple SD Gothic Neo", "Pretendard Variable",
     "Noto Sans KR", sans-serif;
+  --font-serif: var(--font-serif-kr), "AppleMyungjo", "Nanum Myeongjo", serif;
   --font-mono: ui-monospace, "SF Mono", "Space Mono", monospace;
 
-  --color-sunset-deep: #d52d00;
-  --color-sunset: #ef7627;
-  --color-sunset-soft: #ff9a56;
-  --color-rose-soft: #d162a4;
-  --color-rose: #b55690;
-  --color-rose-deep: #a30262;
+  /* 종이 중성색 램프 */
+  --color-cream: #f7f3ea; /* 페이지 */
+  --color-card: #fdfbf6;
+  --color-raised: #f0eadd;
+  --color-line: rgb(42 20 32 / 0.1);
 
-  --color-cream: #fff8f3;
-  --color-ink: #47102f;
-  --color-card: #ffffff;
-  --color-line: #f3dcd0;
+  /* 텍스트 역할 3개 */
+  --color-ink: #2a1420;
+  --color-sub: #5e4f55;
+  --color-muted: #75686b;
+
+  --color-accent: #a30262; /* 플래그 진한 핑크 — 주요 액션·핵심 수치 */
+  --color-accent-hover: #8a0153;
+  --color-seal: #d52d00; /* 인주 — 낙관 도장, 오류 */
+
+  /* 플래그 5색 (게이지·로고 전용) */
+  --color-flag-1: #d52d00;
+  --color-flag-2: #ff9a56;
+  --color-flag-3: #ffffff;
+  --color-flag-4: #d162a4;
+  --color-flag-5: #a30262;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body {
@@ -28,26 +42,97 @@ body {
   color: var(--color-ink);
 }
 
+/* 본문 폭: 기본은 읽기 좋은 한 칼럼, .wide 페이지(홈)만 넓게 쓴다 */
+.page-main > * {
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
+}
+.page-main > .wide {
+  max-width: none;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-card p-6;
+  }
+  .label {
+    @apply text-[13px] leading-5 text-muted;
+  }
+  .title {
+    @apply font-serif font-semibold text-ink;
+  }
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex h-12 items-center justify-center rounded-lg px-5 text-base font-medium
+      transition-[background-color,border-color,color,transform] duration-150 ease-out-soft
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+      active:scale-[0.98] disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-hover;
+  }
+  .btn-secondary {
+    @apply border border-line bg-card text-ink hover:bg-raised;
+  }
+  .field {
+    @apply h-12 w-full rounded-lg border border-line bg-card px-4 text-base text-ink
+      outline-none transition-colors duration-150 ease-out-soft
+      placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20;
+  }
+  .text-link {
+    @apply text-sub underline decoration-line underline-offset-4 transition-colors duration-150
+      hover:text-accent;
+  }
+  /* 카드 안의 줄 목록 — 박스 속 박스 대신 실선으로 구분 */
+  .rows > * {
+    @apply border-t border-line py-3 first:border-t-0 first:pt-0 last:pb-0;
+  }
+  .note {
+    @apply rounded-lg bg-raised p-3 text-sm leading-relaxed;
+  }
+  .meter {
+    @apply h-2 overflow-hidden rounded-full bg-raised;
+  }
+  .meter > * {
+    @apply h-full rounded-full bg-accent;
+  }
+  /* "왜 이렇게 나왔나요" 접이식 근거 */
+  .why {
+    @apply mt-4 border-t border-line pt-3 text-[13px] leading-5 text-muted;
+  }
+  .why > summary {
+    @apply cursor-pointer transition-colors duration-150 hover:text-ink;
+  }
+  .why > p {
+    @apply mt-2 text-sub;
+  }
+  .figure {
+    @apply text-[32px] leading-none font-medium tabular-nums text-ink;
+  }
+}
+
 /* AI 리포트 마크다운 (components/Markdown.tsx) */
 .report-md {
   line-height: 1.7;
-  font-size: 0.925rem;
+  font-size: 0.9375rem;
 }
 .report-md h1 {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  font-weight: 600;
   margin-bottom: 0.75rem;
 }
 .report-md h2 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  margin: 1.25rem 0 0.5rem;
-  color: var(--color-rose-deep);
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
 }
 .report-md h3 {
   font-size: 1rem;
-  font-weight: 700;
-  margin: 1rem 0 0.35rem;
+  font-weight: 600;
+  margin: 1rem 0 0.25rem;
 }
 .report-md p {
   margin: 0.5rem 0;
@@ -61,20 +146,20 @@ body {
   margin: 0.25rem 0;
 }
 .report-md blockquote {
-  border-left: 3px solid var(--color-rose-soft);
+  border-left: 2px solid var(--color-accent);
   padding-left: 0.75rem;
-  color: var(--color-rose);
+  color: var(--color-sub);
   margin: 0.75rem 0;
 }
 .report-md strong {
-  color: var(--color-rose-deep);
+  font-weight: 600;
 }
 .report-md table {
   display: block;
   overflow-x: auto;
   border-collapse: collapse;
   margin: 0.75rem 0;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 .report-md th,
 .report-md td {
@@ -85,13 +170,34 @@ body {
   min-width: 6rem;
 }
 .report-md th {
-  background: var(--color-cream);
-  font-weight: 700;
-  color: var(--color-rose-deep);
+  background: var(--color-raised);
+  font-weight: 600;
   white-space: nowrap;
 }
 .report-md hr {
   border: none;
   border-top: 1px solid var(--color-line);
   margin: 1rem 0;
+}
+
+/* 궁합 분석 로딩 (components/AnalyzingOverlay.tsx)
+   끝나는 시점을 알 수 없으므로 막대는 30초에 걸쳐 90%까지만 차오르고 거기서 기다린다. */
+.analyzing-bar {
+  width: 100%;
+  transform-origin: left;
+  animation: analyzing-fill 30s var(--ease-out-soft) forwards;
+}
+.analyzing-step {
+  animation: analyzing-rise 400ms var(--ease-out-soft);
+}
+@keyframes analyzing-fill {
+  from { transform: scaleX(0.04); }
+  to { transform: scaleX(0.9); }
+}
+@keyframes analyzing-rise {
+  from { opacity: 0; transform: translateY(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .analyzing-bar { animation: none; transform: scaleX(0.5); }
+  .analyzing-step { animation: none; }
 }

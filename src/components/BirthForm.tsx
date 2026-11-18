@@ -24,14 +24,13 @@ export default function BirthForm() {
     router.push(`/result?${params.toString()}`);
   }
 
-  const inputCls =
-    "w-full rounded-xl border border-line bg-card px-4 py-3 text-base outline-none focus:border-rose-soft focus:ring-2 focus:ring-rose-soft/30";
+  const inputCls = "field";
 
   return (
     <form onSubmit={submit} className="grid gap-4">
-      <label className="grid gap-1.5">
-        <span className="text-sm font-semibold">
-          닉네임 <span className="font-normal text-rose">(선택 — 결과에 표시될 이름)</span>
+      <label className="grid gap-2">
+        <span className="text-sm font-medium">
+          닉네임 <span className="font-normal text-muted">(선택)</span>
         </span>
         <input
           type="text"
@@ -43,8 +42,8 @@ export default function BirthForm() {
         />
       </label>
 
-      <label className="grid gap-1.5">
-        <span className="text-sm font-semibold">생년월일</span>
+      <label className="grid gap-2">
+        <span className="text-sm font-medium">생년월일</span>
         <input
           type="date"
           value={date}
@@ -57,8 +56,8 @@ export default function BirthForm() {
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1.5">
-          <span className="text-sm font-semibold">달력</span>
+        <label className="grid gap-2">
+          <span className="text-sm font-medium">달력</span>
           <select
             value={calendar}
             onChange={(e) => setCalendar(e.target.value)}
@@ -69,9 +68,9 @@ export default function BirthForm() {
             <option value="lunar_leap">음력(윤달)</option>
           </select>
         </label>
-        <label className="grid gap-1.5">
-          <span className="text-sm font-semibold">
-            태어난 시간 <span className="font-normal text-rose">(모르면 비워두세요)</span>
+        <label className="grid gap-2">
+          <span className="text-sm font-medium">
+            태어난 시간 <span className="font-normal text-muted">(선택)</span>
           </span>
           <input
             type="time"
@@ -82,18 +81,14 @@ export default function BirthForm() {
         </label>
       </div>
 
-      {error && <p className="text-sm font-semibold text-sunset-deep">{error}</p>}
+      {error && <p className="text-sm text-seal">{error}</p>}
 
-      <button
-        type="submit"
-        className="mt-2 rounded-xl bg-gradient-to-r from-sunset via-rose-soft to-rose-deep px-6 py-4 text-lg font-extrabold text-white transition hover:opacity-90"
-      >
-        내 레즈 사주 보기 →
+      <button type="submit" className="btn-primary mt-2">
+        내 레즈 사주 보기
       </button>
-      <p className="text-center text-xs leading-relaxed text-rose">
-        🔒 로그인 없이 바로 볼 수 있어요. 생년월일과 닉네임 외에는 어떤 정보도 받지 않고,
-        <br className="hidden sm:block" />
-        그마저도 서버에 저장하지 않아요 — 결과 링크에만 담겨요.
+      <p className="label">
+        로그인 없이 바로 볼 수 있어요. 생년월일과 닉네임은 서버에 저장하지 않고 결과 링크에만
+        담겨요.
       </p>
     </form>
   );

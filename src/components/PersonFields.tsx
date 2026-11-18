@@ -14,8 +14,7 @@ export const EMPTY_PERSON: PersonInput = {
   calendar: "solar",
 };
 
-export const inputCls =
-  "w-full rounded-xl border border-line bg-card px-4 py-3 text-base outline-none focus:border-rose-soft focus:ring-2 focus:ring-rose-soft/30";
+export const inputCls = "field";
 
 /** 한 사람 분량의 입력 필드 묶음 (닉네임/생년월일/달력/시간) — 커플 폼에서 재사용 */
 export default function PersonFields({
@@ -29,9 +28,9 @@ export default function PersonFields({
 
   return (
     <div className="grid gap-4">
-      <label className="grid gap-1.5">
-        <span className="text-sm font-semibold">
-          닉네임 <span className="font-normal text-rose">(선택)</span>
+      <label className="grid gap-2">
+        <span className="text-sm font-medium">
+          닉네임 <span className="font-normal text-muted">(선택)</span>
         </span>
         <input
           type="text"
@@ -43,8 +42,8 @@ export default function PersonFields({
         />
       </label>
 
-      <label className="grid gap-1.5">
-        <span className="text-sm font-semibold">생년월일</span>
+      <label className="grid gap-2">
+        <span className="text-sm font-medium">생년월일</span>
         <input
           type="date"
           value={value.date}
@@ -56,8 +55,8 @@ export default function PersonFields({
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="grid gap-1.5">
-          <span className="text-sm font-semibold">달력</span>
+        <label className="grid gap-2">
+          <span className="text-sm font-medium">달력</span>
           <select
             value={value.calendar}
             onChange={(e) => set({ calendar: e.target.value })}
@@ -68,9 +67,9 @@ export default function PersonFields({
             <option value="lunar_leap">음력(윤달)</option>
           </select>
         </label>
-        <label className="grid gap-1.5">
-          <span className="text-sm font-semibold">
-            태어난 시간 <span className="font-normal text-rose">(선택)</span>
+        <label className="grid gap-2">
+          <span className="text-sm font-medium">
+            태어난 시간 <span className="font-normal text-muted">(선택)</span>
           </span>
           <input
             type="time"

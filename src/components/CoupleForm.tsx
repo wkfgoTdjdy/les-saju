@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PersonFields, { PersonInput, EMPTY_PERSON } from "@/components/PersonFields";
 import WaitForCompletion from "@/components/WaitForCompletion";
+import AnalyzingOverlay from "@/components/AnalyzingOverlay";
 
 function toPayload(p: PersonInput) {
   return {
@@ -92,12 +93,13 @@ export default function CoupleForm() {
 
   return (
     <form onSubmit={goDirect} className="grid gap-6">
+      {loading && direct && <AnalyzingOverlay />}
       <div>
-        <h2 className="mb-3 font-bold text-rose-deep">나의 정보</h2>
+        <h2 className="mb-3 font-medium">나의 정보</h2>
         <PersonFields value={me} onChange={setMe} />
       </div>
 
-      <label className="flex items-center gap-2 text-sm font-semibold">
+      <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
           checked={direct}
@@ -106,51 +108,38 @@ export default function CoupleForm() {
             setInviteUrl(null);
             setInviteCode(null);
           }}
-          className="h-4 w-4 accent-rose-deep"
+          className="h-4 w-4 accent-accent"
         />
         애인의 생일도 알고 있어요 (초대 없이 바로 보기)
       </label>
 
       {direct && (
         <div>
-          <h2 className="mb-3 font-bold text-rose-deep">애인의 정보</h2>
+          <h2 className="mb-3 font-medium">애인의 정보</h2>
           <PersonFields value={partner} onChange={setPartner} />
         </div>
       )}
 
-      {error && <p className="text-sm font-semibold text-sunset-deep">{error}</p>}
+      {error && <p className="text-sm text-seal">{error}</p>}
 
       {direct ? (
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-xl bg-gradient-to-r from-sunset via-rose-soft to-rose-deep px-6 py-4 text-lg font-extrabold text-white transition hover:opacity-90 disabled:opacity-60"
-        >
-          {loading ? "AI가 궁합을 읽는 중… 🔮" : "우리 궁합 바로 보기 →"}
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? "궁합을 읽는 중…" : "우리 궁합 바로 보기"}
         </button>
       ) : (
-        <button
-          type="button"
-          onClick={makeInvite}
-          disabled={loading}
-          className="rounded-xl bg-gradient-to-r from-sunset via-rose-soft to-rose-deep px-6 py-4 text-lg font-extrabold text-white transition hover:opacity-90 disabled:opacity-60"
-        >
-          {loading ? "초대 만드는 중…" : "애인에게 보낼 초대 링크 만들기 💌"}
+        <button type="button" onClick={makeInvite} disabled={loading} className="btn-primary">
+          {loading ? "초대 만드는 중…" : "초대 링크 만들기"}
         </button>
       )}
 
       {inviteUrl && (
-        <div className="grid gap-2 rounded-xl bg-cream p-4">
-          <p className="text-sm font-semibold">이 링크를 애인에게 보내세요:</p>
-          <p className="break-all font-mono text-xs text-rose-deep">{inviteUrl}</p>
-          <button
-            type="button"
-            onClick={copyInvite}
-            className="mt-1 rounded-xl border-2 border-rose-deep px-4 py-2.5 text-sm font-bold text-rose-deep transition hover:bg-rose-deep hover:text-white"
-          >
-            {copied ? "복사됐어요! 🎉" : "초대 링크 복사하기"}
+        <div className="grid gap-3 rounded-lg bg-raised p-4">
+          <p className="text-sm font-medium">이 링크를 애인에게 보내세요</p>
+          <p className="break-all font-mono text-xs text-sub">{inviteUrl}</p>
+          <button type="button" onClick={copyInvite} className="btn-secondary">
+            {copied ? "복사됐어요" : "초대 링크 복사하기"}
           </button>
-          <p className="text-xs leading-relaxed text-rose">
+          <p className="label">
             애인이 생일을 입력하는 순간 AI가 둘의 궁합을 풀어요. 초대는 딱 한 번만 쓸 수
             있어요.
           </p>
