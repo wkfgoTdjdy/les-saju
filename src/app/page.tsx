@@ -6,6 +6,7 @@ import { DAY_MASTERS, DAY_MASTER_TYPE, lesType } from "@/lib/les";
 import { calculateSaju } from "@/lib/saju";
 import SajuChart from "@/components/SajuChart";
 import Seal from "@/components/Seal";
+import TipJar from "@/components/TipJar";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -143,6 +144,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <TipJar />
 
       <section className="max-w-2xl">
         <h2 className="title mb-4 text-2xl">자주 묻는 질문</h2>
